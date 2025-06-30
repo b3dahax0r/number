@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Poland Mobile Number Generator with Microsip & PortSIP Dial</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+    h1 {
+      text-align: center;
+    }
+    .number-list {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .number-item {
+      background: #fff;
+      padding: 10px 15px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .number-text {
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+    .buttons {
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      padding: 5px 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 3px;
+      background-color: #1976d2;
+      color: #fff;
+    }
+    button:disabled {
+      background-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <h1>Poland Mobile Number Generator for MicroSIP / PortSIP</h1>
+  <div class="number-list" id="numberList"></div>
+  <script>
+    const prefixes = [
+      "531","532","533","534","535","536","537","538","539",
+      "601","602","603","604","605","606","607","608","609",
+      "660","661","662","663","664","665","666","667","668","669",
+      "691","692","693","694","695","696","697","698","699",
+      "780","781","782","783","784","785","786","787","788","789"
+    ];
+
+    const totalNumbers = 100;
+    const generatedNumbers = new Set();
+
+    function generateNumber() {
+      let number;
+      do {
+        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        const suffix = Math.floor(100000 + Math.random() * 900000).toString();
+        number = "+48" + prefix + suffix;
+      } while (generatedNumbers.has(number));
+      generatedNumbers.add(number);
+      return number;
+    }
+
+    function isMobile() {
+      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+
+    function createNumberItem(number) {
+      const div = document.createElement('div');
+      div.className = 'number-item';
+
+      const span = document.createElement('span');
+      span.className = 'number-text';
+      span.textContent = number;
+
+      const buttonsDiv = document.createElement('div');
+      buttonsDiv.className = 'buttons';
+
+      const callButton = document.createElement('button');
+      callButton.textContent = '📞 Call';
+      callButton.onclick = () => {
+        const uriScheme = isMobile() ? 'portsip' : 'microsip';
+        window.location.href = ${uriScheme}:${number};
+        callButton.disabled = true;
+        callButton.textContent = '✔️ Done';
+      };
+
+      const copyButton = document.createElement('button');
+      copyButton.textContent = '📋 Copy';
+      copyButton.onclick = () => {
+        navigator.clipboard.writeText(number);
+        copyButton.textContent = '✅ Copied!';
+        setTimeout(() => copyButton.textContent = '📋 Copy', 1500);
+      };
+
+      buttonsDiv.appendChild(callButton);
+      buttonsDiv.appendChild(copyButton);
+      div.appendChild(span);
+      div.appendChild(buttonsDiv);
+
+      return div;
+    }
+
+    function generateNumbersList() {
+      const list = document.getElementById('numberList');
+      for (let i = 0; i < totalNumbers; i++) {
+        const number = generateNumber();
+        const item = createNumberItem(number);
+        list.appendChild(item);
+      }
+    }
+
+    generateNumbersList();
+  </script>
+</body>
+</html>
