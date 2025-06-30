@@ -34,13 +34,15 @@
       display: flex;
       gap: 8px;
     }
-    button {
+    button, a.call-link {
       padding: 5px 10px;
+      text-decoration: none;
       cursor: pointer;
       border: none;
       border-radius: 3px;
       background-color: #1976d2;
       color: #fff;
+      display: inline-block;
     }
     button:disabled {
       background-color: #4caf50;
@@ -50,6 +52,7 @@
 <body>
   <h1>Poland Mobile Number Generator for MicroSIP / PortSIP</h1>
   <div class="number-list" id="numberList"></div>
+
   <script>
     const prefixes = [
       "531","532","533","534","535","536","537","538","539",
@@ -60,7 +63,7 @@
     ];
 
     const totalNumbers = 100;
-    const generatedNumbers = new Set();
+    let generatedNumbers = new Set();
 
     function generateNumber() {
       let number;
@@ -88,13 +91,14 @@
       const buttonsDiv = document.createElement('div');
       buttonsDiv.className = 'buttons';
 
-      const callButton = document.createElement('button');
-      callButton.textContent = '📞 Call';
-      callButton.onclick = () => {
-        const uriScheme = isMobile() ? 'portsip' : 'microsip';
-        window.location.href = `${uriScheme}:${number}`;
-        callButton.disabled = true;
-        callButton.textContent = '✔️ Done';
+      const callLink = document.createElement('a');
+      callLink.textContent = '📞 Call';
+      callLink.className = 'call-link';
+      const uriScheme = isMobile() ? 'portsip' : 'microsip';
+      callLink.href = `${uriScheme}:${number}`;
+      callLink.onclick = () => {
+        callLink.textContent = '✔️ Done';
+        callLink.style.backgroundColor = '#4caf50';
       };
 
       const copyButton = document.createElement('button');
@@ -105,7 +109,7 @@
         setTimeout(() => copyButton.textContent = '📋 Copy', 1500);
       };
 
-      buttonsDiv.appendChild(callButton);
+      buttonsDiv.appendChild(callLink);
       buttonsDiv.appendChild(copyButton);
       div.appendChild(span);
       div.appendChild(buttonsDiv);
@@ -113,13 +117,38 @@
       return div;
     }
 
+    function loadFromLocalStorage() {
+      const data = localStorage.getItem('generatedPolishNumbers');
+      if (data) {
+        generatedNumbers = new Set(JSON.parse(data));
+        return Array.from(generatedNumbers);
+      }
+      return null;
+    }
+
+    function saveToLocalStorage(numbers) {
+      localStorage.setItem('generatedPolishNumbers', JSON.stringify(numbers));
+    }
+
     function generateNumbersList() {
       const list = document.getElementById('numberList');
-      for (let i = 0; i < totalNumbers; i++) {
-        const number = generateNumber();
+      let numbers = loadFromLocalStorage();
+
+      if (!numbers) {
+        numbers = [];
+        for (let i = 0; i < totalNumbers; i++) {
+          const number = generateNumber();
+          numbers.push(number);
+        }
+        saveToLocalStorage(numbers);
+      } else {
+        numbers.forEach(n => generatedNumbers.add(n));
+      }
+
+      numbers.forEach(number => {
         const item = createNumberItem(number);
         list.appendChild(item);
-      }
+      });
     }
 
     generateNumbersList();
