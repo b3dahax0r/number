@@ -92,7 +92,7 @@
       callButton.textContent = '📞 Call';
       callButton.onclick = () => {
         const uriScheme = isMobile() ? 'portsip' : 'microsip';
-        window.location.href = ${uriScheme}:${number};
+        window.location.href = `${uriScheme}:${number}`;
         callButton.disabled = true;
         callButton.textContent = '✔️ Done';
       };
