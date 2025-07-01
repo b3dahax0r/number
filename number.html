@@ -2,73 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Poland Mobile Number Generator with Microsip & PortSIP Dial</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Poland Mobile Number Generator (Prefix 531)</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #eef2f7;
+      margin: 0;
       padding: 20px;
-      background-color: #f7f7f7;
-    }
-    h1 {
-      text-align: center;
-    }
-    .number-list {
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    .number-item {
-      background: #fff;
-      padding: 10px 15px;
-      margin-bottom: 8px;
       display: flex;
+      flex-direction: column;
       align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #1a73e8;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    #numberList {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      padding: 15px 0;
+      overflow-y: auto;
+      max-height: 75vh;
+    }
+
+    .number-item {
+      display: flex;
       justify-content: space-between;
-      border-radius: 5px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s ease;
     }
+
+    .number-item:last-child {
+      border-bottom: none;
+    }
+
     .number-text {
-      font-size: 1.1em;
-      font-weight: bold;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #333;
+      user-select: text;
+      word-break: break-word;
     }
+
     .buttons {
       display: flex;
-      gap: 8px;
+      gap: 10px;
+      flex-shrink: 0;
     }
-    button, a.call-link {
-      padding: 5px 10px;
-      text-decoration: none;
-      cursor: pointer;
+
+    button {
+      background-color: #1a73e8;
       border: none;
-      border-radius: 3px;
-      background-color: #1976d2;
-      color: #fff;
-      display: inline-block;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.25s ease;
+      user-select: none;
     }
+
+    button:hover:not(:disabled) {
+      background-color: #155ab6;
+    }
+
     button:disabled {
       background-color: #4caf50;
+      cursor: default;
+    }
+
+    /* Responsive for small phones */
+    @media (max-width: 400px) {
+      #numberList {
+        max-width: 100%;
+        padding: 10px 0;
+      }
+
+      .number-item {
+        padding: 10px 12px;
+      }
+
+      .number-text {
+        font-size: 1rem;
+      }
+
+      button {
+        padding: 7px 12px;
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Poland Mobile Number Generator for MicroSIP / PortSIP</h1>
-  <div class="number-list" id="numberList"></div>
+  <h1>Poland Mobile Number Generator (Prefix 531)</h1>
+  <div id="numberList"></div>
 
   <script>
-    const prefixes = [
-      "531","532","533","534","535","536","537","538","539",
-      "601","602","603","604","605","606","607","608","609",
-      "660","661","662","663","664","665","666","667","668","669",
-      "691","692","693","694","695","696","697","698","699",
-      "780","781","782","783","784","785","786","787","788","789"
-    ];
+    const totalNumbers = 50; // Number of numbers to generate
+    const prefix = "531";    // Fixed prefix as per your request
 
-    const totalNumbers = 100;
     let generatedNumbers = new Set();
+    let copiedNumbers = new Set();
 
     function generateNumber() {
       let number;
       do {
-        const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+        // Generate suffix: 6 random digits (100000 - 999999)
         const suffix = Math.floor(100000 + Math.random() * 900000).toString();
         number = "+48" + prefix + suffix;
       } while (generatedNumbers.has(number));
@@ -91,64 +145,51 @@
       const buttonsDiv = document.createElement('div');
       buttonsDiv.className = 'buttons';
 
-      const callLink = document.createElement('a');
-      callLink.textContent = '📞 Call';
-      callLink.className = 'call-link';
-      const uriScheme = isMobile() ? 'portsip' : 'microsip';
-      callLink.href = `${uriScheme}:${number}`;
-      callLink.onclick = () => {
-        callLink.textContent = '✔️ Done';
-        callLink.style.backgroundColor = '#4caf50';
+      const callButton = document.createElement('button');
+      callButton.innerHTML = '📞 Call';
+      callButton.onclick = () => {
+        const cleanedNumber = number.replace('+', '');
+        let callUri;
+
+        if (isMobile()) {
+          callUri = `portsip:${cleanedNumber}`;
+        } else {
+          callUri = `microsip:${cleanedNumber}`;
+        }
+
+        const a = document.createElement('a');
+        a.href = callUri;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        callButton.disabled = true;
       };
 
       const copyButton = document.createElement('button');
-      copyButton.textContent = '📋 Copy';
+      copyButton.innerHTML = '📋 Copy';
       copyButton.onclick = () => {
-        navigator.clipboard.writeText(number);
-        copyButton.textContent = '✅ Copied!';
-        setTimeout(() => copyButton.textContent = '📋 Copy', 1500);
+        navigator.clipboard.writeText(number).then(() => {
+          copyButton.innerHTML = '✅ Copied!';
+          copiedNumbers.add(number);
+        });
       };
 
-      buttonsDiv.appendChild(callLink);
+      buttonsDiv.appendChild(callButton);
       buttonsDiv.appendChild(copyButton);
+
       div.appendChild(span);
       div.appendChild(buttonsDiv);
 
       return div;
     }
 
-    function loadFromLocalStorage() {
-      const data = localStorage.getItem('generatedPolishNumbers');
-      if (data) {
-        generatedNumbers = new Set(JSON.parse(data));
-        return Array.from(generatedNumbers);
-      }
-      return null;
-    }
-
-    function saveToLocalStorage(numbers) {
-      localStorage.setItem('generatedPolishNumbers', JSON.stringify(numbers));
-    }
-
     function generateNumbersList() {
       const list = document.getElementById('numberList');
-      let numbers = loadFromLocalStorage();
-
-      if (!numbers) {
-        numbers = [];
-        for (let i = 0; i < totalNumbers; i++) {
-          const number = generateNumber();
-          numbers.push(number);
-        }
-        saveToLocalStorage(numbers);
-      } else {
-        numbers.forEach(n => generatedNumbers.add(n));
-      }
-
-      numbers.forEach(number => {
+      for (let i = 0; i < totalNumbers; i++) {
+        const number = generateNumber();
         const item = createNumberItem(number);
         list.appendChild(item);
-      });
+      }
     }
 
     generateNumbersList();
