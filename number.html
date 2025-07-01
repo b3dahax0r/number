@@ -1,48 +1,146 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Poland Mobile Number Generator (Prefix 531)</title>
+  <title>Intl Number Generator Responsive</title>
   <style>
+    :root {
+      --bg-start: #00c9ff;
+      --bg-mid: #92fe9d;
+      --bg-end: #ff7eb3;
+      --card-bg-light: rgba(255,255,255,0.95);
+      --card-bg-dark: #2c2c2c;
+      --text-light: #eee;
+      --text-dark: #222;
+      --btn-primary: #00a1ff;
+      --btn-secondary: #ff416c;
+      --ripple-color: rgba(255, 255, 255, 0.5);
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #eef2f7;
       margin: 0;
-      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text-dark);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      padding: 30px 15px 40px;
+      background:
+        linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+      background-size: cover;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.light {
+      color: var(--text-light);
+      background:
+        linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+      background-size: cover;
     }
 
     h1 {
-      color: #1a73e8;
-      margin-bottom: 20px;
       text-align: center;
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+      margin-bottom: 20px;
+      font-size: 2.2rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      font-feature-settings: "liga" 0;
+    }
+
+    .container {
+      max-width: 480px;
+      width: 100%;
+      background: var(--card-bg-light);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      transition: background 0.3s;
+    }
+    body.dark .container {
+      background: var(--card-bg-dark);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    select, button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex: 1 1 120px;
+      min-width: 120px;
+      transition: transform 0.2s ease;
       font-weight: 700;
+      outline: none;
+      position: relative;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    select {
+      background: #fff;
+      color: #222;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    }
+
+    select:hover, button:hover {
+      transform: scale(1.05);
+    }
+
+    button.generate {
+      background: linear-gradient(135deg, #28a745, #218838);
+      color: white;
+      box-shadow: 0 6px 20px rgba(40,167,69,0.6);
+      flex: 1 1 140px;
+      min-width: 140px;
+    }
+
+    button.light-toggle {
+      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+      color: white;
+      box-shadow: 0 6px 20px rgba(255,65,108,0.6);
+      flex: 1 1 140px;
+      min-width: 140px;
     }
 
     #numberList {
-      width: 100%;
-      max-width: 400px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      padding: 15px 0;
+      max-height: 60vh;
       overflow-y: auto;
-      max-height: 75vh;
+      margin-top: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      background: var(--card-bg-light);
+      transition: background 0.3s;
+    }
+    body.dark #numberList {
+      background: var(--card-bg-dark);
     }
 
     .number-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 20px;
-      border-bottom: 1px solid #eee;
-      transition: background-color 0.2s ease;
+      padding: 14px 20px;
+      border-bottom: 1px solid #ddd;
+      transition: opacity 0.3s;
+      word-break: break-word;
+      font-variant-numeric: tabular-nums;
     }
-
+    body.dark .number-item {
+      border-color: #444;
+    }
     .number-item:last-child {
       border-bottom: none;
     }
@@ -50,149 +148,265 @@
     .number-text {
       font-weight: 600;
       font-size: 1.15rem;
-      color: #333;
+      color: var(--text-dark);
+      font-family: 'Courier New', Courier, monospace;
+      letter-spacing: 0.08em;
       user-select: text;
-      word-break: break-word;
+      opacity: 0.85;
+      transition: opacity 0.25s ease;
     }
-
-    .buttons {
-      display: flex;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-
-    button {
-      background-color: #1a73e8;
-      border: none;
-      color: white;
-      padding: 8px 14px;
-      border-radius: 6px;
-      cursor: pointer;
+    body.dark .number-text {
+      color: var(--text-light);
       font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background-color 0.25s ease;
+      letter-spacing: 0.08em;
+    }
+
+    .copy-btn {
+      background: var(--btn-secondary);
+      color: #fff;
+      padding: 6px 6px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: transform 0.2s ease, background-color 0.3s ease;
+      cursor: pointer;
+      min-width: 50px;
+      box-shadow: 0 5px 15px rgba(255, 65, 108, 0.6);
       user-select: none;
+      flex-shrink: 0;
+      width: auto;
+      overflow: hidden;
+      position: relative;
     }
 
-    button:hover:not(:disabled) {
-      background-color: #155ab6;
+    .copy-btn:hover:not(:disabled) {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, #ff4b2b, #ff416c);
+      box-shadow: 0 7px 20px rgba(255, 75, 67, 0.8);
     }
 
-    button:disabled {
-      background-color: #4caf50;
+    .copy-btn:disabled {
+      background: #28a745;
       cursor: default;
+      box-shadow: none;
+      transform: none;
     }
 
-    /* Responsive for small phones */
-    @media (max-width: 400px) {
-      #numberList {
-        max-width: 100%;
-        padding: 10px 0;
-      }
+    /* Ripple effect for all buttons */
+    button:focus:not(:disabled)::after,
+    button:active:not(:disabled)::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 100%;
+      height: 100%;
+      background: var(--ripple-color);
+      border-radius: inherit;
+      transform: translate(-50%, -50%) scale(0);
+      animation: ripple 0.6s forwards;
+      pointer-events: none;
+      z-index: 1;
+    }
 
+    @keyframes ripple {
+      to {
+        transform: translate(-50%, -50%) scale(2.5);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
       .number-item {
-        padding: 10px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
       }
-
-      .number-text {
-        font-size: 1rem;
+      .copy-btn {
+        width: auto;
+        min-width: 50px;
+        font-size: 0.8rem;
+        padding: 5px 8px;
       }
-
-      button {
-        padding: 7px 12px;
-        font-size: 0.85rem;
+      select, button {
+        min-width: 100%;
+        flex: 1 1 100%;
+      }
+      .controls {
+        gap: 15px;
       }
     }
   </style>
 </head>
 <body>
-  <h1>Poland Mobile Number Generator (Prefix 531)</h1>
-  <div id="numberList"></div>
+  <h1>International Number Generator</h1>
+  <div class="container">
+    <div class="controls">
+      <select id="countrySelect" aria-label="Select Country">
+        <option value="PL">🇵🇱 Poland</option>
+        <option value="ES">🇪🇸 Spain</option>
+      </select>
+      <select id="prefixSelect" aria-label="Select Prefix"></select>
+    </div>
+    <div class="controls">
+      <button class="generate" aria-label="Generate More Numbers">🔁 Generate More</button>
+      <button class="light-toggle" aria-label="Toggle Light/Dark Mode">🌞 Toggle Light/Dark</button>
+    </div>
+    <div id="numberList" role="list" aria-live="polite"></div>
+  </div>
 
   <script>
-    const totalNumbers = 50; // Number of numbers to generate
-    const prefix = "531";    // Fixed prefix as per your request
+    const countryData = {
+      PL: {
+        prefixes: ['531','533','535'], // only voicemail supported
+        voicemail: ['531','533','535']
+      },
+      ES: {
+        prefixes: ['610','620','640'], // only voicemail supported
+        voicemail: ['610','620','640']
+      }
+    };
 
-    let generatedNumbers = new Set();
-    let copiedNumbers = new Set();
+    const storagePrefix = prefix => `nums_${selCountry}_${prefix}`;
+    let selCountry = 'PL', selPrefix = '';
+    let saved = new Set();
+    let lastCopiedBtn = null; // track last copied button (DOM element)
+    let lastCopiedNumber = null; // track last copied number (string)
+
+    const countrySelect = document.getElementById('countrySelect');
+    const prefixSelect = document.getElementById('prefixSelect');
+    const genBtn = document.querySelector('.generate');
+    const toggleBtn = document.querySelector('.light-toggle');
+    const list = document.getElementById('numberList');
+
+    function fillPrefixes() {
+      selPrefix = '';
+      prefixSelect.innerHTML = countryData[selCountry].prefixes
+        .map(p => `<option value="${p}">${p} 🎧</option>`).join('');
+      selPrefix = prefixSelect.value;
+    }
+
+    function loadSaved() {
+      saved = new Set();
+      const arr = JSON.parse(localStorage.getItem(storagePrefix(selPrefix)) || '[]');
+      arr.forEach(n => saved.add(n));
+      return Array.from(saved);
+    }
+
+    function save() {
+      localStorage.setItem(storagePrefix(selPrefix), JSON.stringify(Array.from(saved)));
+    }
 
     function generateNumber() {
       let number;
       do {
-        // Generate suffix: 6 random digits (100000 - 999999)
-        const suffix = Math.floor(100000 + Math.random() * 900000).toString();
-        number = "+48" + prefix + suffix;
-      } while (generatedNumbers.has(number));
-      generatedNumbers.add(number);
+        const suf = ('' + Math.floor(100000 + Math.random() * 900000));
+        number = `+48${selPrefix}${suf}`;
+      } while (saved.has(number));
+      saved.add(number);
       return number;
-    }
-
-    function isMobile() {
-      return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     }
 
     function createNumberItem(number) {
       const div = document.createElement('div');
       div.className = 'number-item';
+      div.setAttribute('role', 'listitem');
 
       const span = document.createElement('span');
       span.className = 'number-text';
       span.textContent = number;
 
-      const buttonsDiv = document.createElement('div');
-      buttonsDiv.className = 'buttons';
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
 
-      const callButton = document.createElement('button');
-      callButton.innerHTML = '📞 Call';
-      callButton.onclick = () => {
-        const cleanedNumber = number.replace('+', '');
-        let callUri;
+      // Check if this number was last copied, show copied status
+      if (number === lastCopiedNumber) {
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.disabled = true;
+        lastCopiedBtn = copyBtn;
+      } else {
+        copyBtn.textContent = '📋 Copy';
+        copyBtn.disabled = false;
+      }
 
-        if (isMobile()) {
-          callUri = `portsip:${cleanedNumber}`;
-        } else {
-          callUri = `microsip:${cleanedNumber}`;
-        }
-
-        const a = document.createElement('a');
-        a.href = callUri;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        callButton.disabled = true;
-      };
-
-      const copyButton = document.createElement('button');
-      copyButton.innerHTML = '📋 Copy';
-      copyButton.onclick = () => {
+      copyBtn.onclick = () => {
         navigator.clipboard.writeText(number).then(() => {
-          copyButton.innerHTML = '✅ Copied!';
-          copiedNumbers.add(number);
+          // Reset previous copied button if exists
+          if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
+            lastCopiedBtn.textContent = '📋 Copy';
+            lastCopiedBtn.disabled = false;
+          }
+          copyBtn.textContent = '✅ Copied!';
+          copyBtn.disabled = true;
+          lastCopiedBtn = copyBtn;
+          lastCopiedNumber = number;
         });
       };
 
-      buttonsDiv.appendChild(callButton);
-      buttonsDiv.appendChild(copyButton);
-
       div.appendChild(span);
-      div.appendChild(buttonsDiv);
-
+      div.appendChild(copyBtn);
       return div;
     }
 
-    function generateNumbersList() {
-      const list = document.getElementById('numberList');
-      for (let i = 0; i < totalNumbers; i++) {
-        const number = generateNumber();
-        const item = createNumberItem(number);
-        list.appendChild(item);
-      }
+    function renderNumberList(numbers, replace = false) {
+      if (replace) list.innerHTML = '';
+      numbers.forEach(n => {
+        list.appendChild(createNumberItem(n));
+      });
     }
 
-    generateNumbersList();
+    function generateMore() {
+      const newNumbers = [];
+      for (let i = 0; i < 10; i++) {
+        const num = generateNumber();
+        newNumbers.push(num);
+      }
+      save();  // save updated set including new numbers
+      renderNumberList(newNumbers, true);
+    }
+
+    function onPrefixChange() {
+      selPrefix = prefixSelect.value;
+      list.innerHTML = '';
+      lastCopiedBtn = null;
+      lastCopiedNumber = null;
+      const existing = loadSaved().sort();
+      renderNumberList(existing, true);
+    }
+
+    countrySelect.onchange = () => {
+      selCountry = countrySelect.value;
+      fillPrefixes();
+      saved.clear();
+      lastCopiedBtn = null;
+      lastCopiedNumber = null;
+      onPrefixChange();
+    };
+
+    prefixSelect.onchange = () => {
+      lastCopiedBtn = null;
+      lastCopiedNumber = null;
+      onPrefixChange();
+    };
+
+    toggleBtn.onclick = () => {
+      document.body.classList.toggle('dark');
+      document.body.classList.toggle('light');
+      localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
+    };
+
+    // Initialization
+    fillPrefixes();
+    selPrefix = prefixSelect.value;
+    onPrefixChange();
+
+    // Generate More button
+    genBtn.onclick = generateMore;
+
+    // Load mode
+    const savedMode = localStorage.getItem('mode') || 'dark';
+    document.body.classList.add(savedMode);
   </script>
 </body>
 </html>
