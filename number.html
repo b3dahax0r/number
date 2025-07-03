@@ -295,6 +295,10 @@
                         style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'currentColor\'%3e%3cpath fill-rule=\'evenodd\' d=\'M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\' clip-rule=\'evenodd\'%3e%3c/path%3e%3c/svg%3e'); background-size: 1.5rem;">
                     <option value="PL">🇵🇱 Poland</option>
                     <option value="ES">🇪🇸 Spain</option>
+                    <option value="EE">🇪🇪 Estonia</option>
+                    <option value="HU">🇭🇺 Hungary</option>
+                    <option value="LT">🇱🇹 Lithuania</option>
+                    <option value="SK">🇸🇰 Slovakia</option>
                 </select>
                 <select id="prefixSelect" aria-label="Select Prefix"
                         class="btn-main bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:scale-105 appearance-none pr-8 bg-no-repeat bg-right-center"
@@ -326,8 +330,8 @@
         const mainContent = document.getElementById('main-content');
 
         // Passwords encoded in Base64 (for client-side demonstration only)
-        const USER_PASSWORD_B64 = 'dGFudQ=='; // 'tanu'
-        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; // 'tanisha'
+        const USER_PASSWORD_B64 = 'dGFudQ=='; 
+        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ==';
         const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
 
         let autoLogoutIntervalId = null; // Variable to store the interval ID for auto-logout
@@ -445,14 +449,34 @@
         function initializeApp() {
             const countryData = {
                 PL: {
-                    prefixes: ['531', '533', '535'], // only voicemail supported
-                    voicemail: ['531', '533', '535'],
-                    countryCode: '+48'
+                    prefixes: ['531', '533', '535', '790', '791', '792', '793'],
+                    countryCode: '+48',
+                    mobileNumberLength: 9 // digits excluding country code
                 },
                 ES: {
-                    prefixes: ['610', '620', '640'], // only voicemail supported
-                    voicemail: ['610', '620', '640'],
-                    countryCode: '+34'
+                    prefixes: ['610', '620', '640'],
+                    countryCode: '+34',
+                    mobileNumberLength: 9 // Spain's mobile numbers are typically 9 digits
+                },
+                EE: {
+                    prefixes: ['500', '501', '502', '503', '504', '505', '506', '507', '508', '509', '510', '511', '512', '513', '514', '515', '516', '517', '518', '519', '520', '521', '522', '523', '524', '525', '526', '527', '528', '529'],
+                    countryCode: '+372',
+                    mobileNumberLength: 7 // Estonia's mobile numbers can be 7 or 8. Using 7 for consistency.
+                },
+                HU: {
+                    prefixes: ['20', '30', '70'],
+                    countryCode: '+36',
+                    mobileNumberLength: 9 // Hungary's mobile numbers are typically 9 digits
+                },
+                LT: {
+                    prefixes: ['600', '601', '602'],
+                    countryCode: '+370',
+                    mobileNumberLength: 8 // Lithuania's mobile numbers are typically 8 digits
+                },
+                SK: {
+                    prefixes: ['900', '901', '902', '903', '904', '905', '906', '907', '908', '909', '910', '911', '912', '913', '914', '915', '916', '917', '918', '919'],
+                    countryCode: '+421',
+                    mobileNumberLength: 9 // Slovakia's mobile numbers are typically 9 digits
                 }
             };
 
@@ -474,9 +498,26 @@
              */
             function fillPrefixes() {
                 selPrefix = '';
-                prefixSelect.innerHTML = countryData[selCountry].prefixes
-                    .map(p => `<option value="${p}">${p} 🎧</option>`).join('');
-                selPrefix = prefixSelect.value;
+                // Clear existing options
+                prefixSelect.innerHTML = ''; 
+                const prefixes = countryData[selCountry].prefixes;
+                // Add a default option if no prefixes are available or if you want a "Select a prefix" option
+                if (prefixes && prefixes.length > 0) {
+                    prefixes.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p;
+                        option.textContent = `${p} 🎧`;
+                        prefixSelect.appendChild(option);
+                    });
+                    selPrefix = prefixSelect.value; // Set the selected prefix to the first one available
+                    prefixSelect.disabled = false;
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No prefixes available';
+                    prefixSelect.appendChild(option);
+                    prefixSelect.disabled = true; // Disable if no prefixes
+                }
             }
 
             /**
@@ -498,15 +539,30 @@
             }
 
             /**
-             * Generates a unique 10-digit international number based on selected country and prefix.
+             * Generates a unique international number based on selected country and prefix,
+             * adhering to the specified mobile number length.
              * @returns {string} The generated phone number.
              */
             function generateNumber() {
                 let number;
-                const countryCode = countryData[selCountry].countryCode;
+                const countryInfo = countryData[selCountry];
+                const countryCode = countryInfo.countryCode;
+                const mobileNumberLength = countryInfo.mobileNumberLength; // Length excluding country code
+
+                // Calculate the length of the random suffix
+                // mobileNumberLength = prefixLength + suffixLength
+                const suffixLength = mobileNumberLength - selPrefix.length;
+
+                if (suffixLength <= 0) {
+                    console.error("Error: Suffix length is zero or negative. Check prefix and mobileNumberLength for country:", selCountry);
+                    return "ERROR"; // Return an error string or handle appropriately
+                }
+
                 do {
-                    // Generate a 6-digit suffix
-                    const suf = ('' + Math.floor(100000 + Math.random() * 900000));
+                    let suf = '';
+                    for (let i = 0; i < suffixLength; i++) {
+                        suf += Math.floor(Math.random() * 10);
+                    }
                     number = `${countryCode}${selPrefix}${suf}`;
                 } while (saved.has(number)); // Ensure the number is unique
                 saved.add(number);
@@ -586,6 +642,11 @@
              */
             function generateMore() {
                 const newNumbers = [];
+                // Check if a prefix is selected before generating
+                if (!selPrefix || selPrefix === '') {
+                    alert('Please select a prefix before generating numbers.');
+                    return;
+                }
                 for (let i = 0; i < 10; i++) {
                     const num = generateNumber();
                     newNumbers.push(num);
