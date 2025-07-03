@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Intl Number Generator v1.0</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom CSS for gradients, ripple effect, and specific styles not easily done with Tailwind */
@@ -255,7 +254,6 @@
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-800 dark:text-gray-200">
 
-    <!-- Login Screen (now acts as a popup overlay) -->
     <div id="login-screen" class="fixed inset-0 flex flex-col items-center justify-center z-50">
         <div id="login-form" class="p-8 rounded-2xl shadow-2xl text-center w-11/12 max-w-md transition-colors duration-300">
             <h2 class="text-4xl font-extrabold mb-6 font-montserrat text-white dark:text-white">Welcome to Generator <span class="text-purple-400 dark:text-purple-300">v1.0</span></h2>
@@ -270,7 +268,6 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div id="main-content" class="hidden w-full max-w-xl flex flex-col items-center pt-10 pb-10">
         <h1 class="text-4xl font-extrabold text-white mb-8 tracking-wide text-center">International Number Generator <span class="text-blue-300 text-2xl">v1.0</span></h1>
 
@@ -299,7 +296,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer class="mt-10 text-white text-lg font-medium text-shadow-sm text-center">
         Build with ❤️ By <a href="https://t.me/iambedahere" target="_blank" class="text-blue-300 hover:text-blue-500 transition-colors duration-200 underline">B3da Hax0r</a>
     </footer>
@@ -313,9 +309,11 @@
         const mainContent = document.getElementById('main-content');
 
         // Passwords encoded in Base64
-        const USER_PASSWORD_B64 = 'dGFudQ=='; 
-        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; 
+        const USER_PASSWORD_B64 = 'dGFudQ==';
+        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ==';
         const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
+
+        let autoLogoutIntervalId = null; // Variable to store the interval ID for auto-logout
 
         /**
          * Checks if the current time in Cambodia (ICT - Indochina Time, UTC+7)
@@ -332,6 +330,39 @@
             const hour = cambodiaTime.getHours();
             // Block from 6 PM (18:00) to 11 PM (23:00)
             return (hour >= 18 && hour < 23);
+        }
+
+        /**
+         * Starts a timer that periodically checks the time for auto-logout.
+         * If the user is a regular user and the time hits 6 PM, it logs them out.
+         */
+        function startAutoLogoutTimer() {
+            // Clear any existing timer to prevent multiple intervals running
+            if (autoLogoutIntervalId) {
+                clearInterval(autoLogoutIntervalId);
+            }
+
+            autoLogoutIntervalId = setInterval(() => {
+                const storedUserRole = sessionStorage.getItem(LOGIN_STATUS_KEY);
+                if (storedUserRole === 'user') {
+                    const now = new Date();
+                    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+                    const cambodiaTime = new Date(utc + (3600000 * 7));
+                    const hour = cambodiaTime.getHours();
+
+                    // If it's 6 PM or later, and the user is not an admin, log them out
+                    if (hour >= 18) {
+                        console.log('Auto-logging out user due to time restriction.');
+                        sessionStorage.removeItem(LOGIN_STATUS_KEY); // Remove login session
+                        clearInterval(autoLogoutIntervalId); // Stop the timer
+                        window.location.reload(); // Reload the page to go back to login screen
+                    }
+                } else {
+                    // If no user is logged in or it's an admin, stop the timer
+                    clearInterval(autoLogoutIntervalId);
+                    autoLogoutIntervalId = null;
+                }
+            }, 60000); // Check every minute (60000 milliseconds)
         }
 
         /**
@@ -361,6 +392,9 @@
                 loginScreen.classList.add('hidden'); // Hide the login popup
                 mainContent.style.display = 'flex'; // Show main content
                 initializeApp(); // Initialize the main application
+                if (userRole === 'user') {
+                    startAutoLogoutTimer(); // Start auto-logout timer for regular users
+                }
             } else {
                 loginErrorMessage.textContent = 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।'; // Incorrect password message in Bengali
                 passwordInput.value = ''; // Clear password field
@@ -382,11 +416,15 @@
                 loginScreen.classList.remove('hidden'); // Ensure popup is visible
                 mainContent.style.display = 'none';
                 loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
+                sessionStorage.removeItem(LOGIN_STATUS_KEY); // Clear session if already logged in and time restricted
             } else {
                 // If logged in and access is allowed, hide login screen and show main content
                 loginScreen.classList.add('hidden'); // Hide the login popup
                 mainContent.style.display = 'flex'; // Show main content
                 initializeApp();
+                if (storedUserRole === 'user') {
+                    startAutoLogoutTimer(); // Start auto-logout timer for regular users who are already logged in
+                }
             }
         } else {
             loginScreen.classList.remove('hidden'); // Show the login popup
@@ -481,7 +519,7 @@
 
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'copy-btn btn-main btn-copy ml-4 px-4 py-2 rounded-xl text-white text-sm font-bold transition-all duration-300 relative overflow-hidden flex-shrink-0 transform hover:scale-105';
-                
+
                 // Set initial state based on lastCopiedNumber
                 if (number === lastCopiedNumber) {
                     copyBtn.innerHTML = '✅ Copied!';
