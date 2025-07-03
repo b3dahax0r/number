@@ -1,412 +1,592 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Intl Number Generator Responsive</title>
-  <style>
-    :root {
-      --bg-start: #00c9ff;
-      --bg-mid: #92fe9d;
-      --bg-end: #ff7eb3;
-      --card-bg-light: rgba(255,255,255,0.95);
-      --card-bg-dark: #2c2c2c;
-      --text-light: #eee;
-      --text-dark: #222;
-      --btn-primary: #00a1ff;
-      --btn-secondary: #ff416c;
-      --ripple-color: rgba(255, 255, 255, 0.5);
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intl Number Generator v1.0</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom CSS for gradients, ripple effect, and specific styles not easily done with Tailwind */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap'); /* For headings */
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      color: var(--text-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px 15px 40px;
-      background:
-        linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-      background-size: cover;
-      transition: background 0.3s, color 0.3s;
-    }
-    body.light {
-      color: var(--text-light);
-      background:
-        linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
-        url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
-      background-size: cover;
-    }
+        :root {
+            /* Main app colors */
+            --main-bg-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');
+            --main-overlay-light: rgba(255, 255, 255, 0.6);
+            --main-overlay-dark: rgba(0, 0, 0, 0.7);
+            --card-bg-light: rgba(255, 255, 255, 0.15); /* More transparent for frosted effect */
+            --card-bg-dark: rgba(25, 25, 25, 0.15);
+            --text-light: #f3f4f6; /* Light gray */
+            --text-dark: #1f2937; /* Dark gray */
+            --border-light: rgba(255, 255, 255, 0.3);
+            --border-dark: rgba(0, 0, 0, 0.3);
+            --ripple-color: rgba(255, 255, 255, 0.6);
 
-    h1 {
-      text-align: center;
-      color: #fff;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
-      margin-bottom: 20px;
-      font-size: 2.2rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      font-feature-settings: "liga" 0;
-    }
+            /* Login page specific colors & styles for popup */
+            --login-popup-overlay-light: rgba(255, 255, 255, 0.8); /* Lighter overlay for popup */
+            --login-popup-overlay-dark: rgba(0, 0, 0, 0.8); /* Darker overlay for popup */
+            --login-card-bg-light: rgba(255, 255, 255, 0.1); /* Very transparent for frosted effect */
+            --login-card-bg-dark: rgba(0, 0, 0, 0.1); /* Very transparent for frosted effect */
+            --login-border-light: rgba(255, 255, 255, 0.4);
+            --login-border-dark: rgba(255, 255, 255, 0.2);
+            --login-text-color-light: #e0e7ff; /* Light bluish-white for contrast on transparent card */
+            --login-text-color-dark: #e0e7ff; /* Same for dark mode */
+            --login-input-bg-light: rgba(255, 255, 255, 0.2); /* Transparent input background */
+            --login-input-bg-dark: rgba(0, 0, 0, 0.2);
+            --login-input-border-light: rgba(255, 255, 255, 0.5);
+            --login-input-border-dark: rgba(255, 255, 255, 0.3);
+            --login-input-placeholder-light: rgba(255, 255, 255, 0.7);
+            --login-input-placeholder-dark: rgba(255, 255, 255, 0.5);
+            --login-btn-start: #8B5CF6; /* Purple */
+            --login-btn-end: #EC4899; /* Pink */
+        }
 
-    .container {
-      max-width: 480px;
-      width: 100%;
-      background: var(--card-bg-light);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-      transition: background 0.3s;
-    }
-    body.dark .container {
-      background: var(--card-bg-dark);
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+            background-image: var(--main-bg-image);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            z-index: 0;
+        }
 
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
+        /* Overlay for main app background image */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--main-overlay-dark);
+            z-index: -1;
+            transition: background 0.5s ease;
+        }
 
-    select, button {
-      padding: 14px 20px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      flex: 1 1 120px;
-      min-width: 120px;
-      transition: transform 0.2s ease;
-      font-weight: 700;
-      outline: none;
-      position: relative;
-      overflow: hidden;
-      -webkit-tap-highlight-color: transparent;
-    }
+        body.light::before {
+            background: var(--main-overlay-light);
+        }
 
-    select {
-      background: #fff;
-      color: #222;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+        }
 
-    select:hover, button:hover {
-      transform: scale(1.05);
-    }
+        /* Frosted glass effect for containers */
+        .frosted-card {
+            backdrop-filter: blur(15px); /* Increased blur */
+            -webkit-backdrop-filter: blur(15px);
+            background-color: var(--card-bg-light);
+            border: 1px solid var(--border-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
 
-    button.generate {
-      background: linear-gradient(135deg, #28a745, #218838);
-      color: white;
-      box-shadow: 0 6px 20px rgba(40,167,69,0.6);
-      flex: 1 1 140px;
-      min-width: 140px;
-    }
+        body.dark .frosted-card {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--border-dark);
+        }
 
-    button.light-toggle {
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);
-      color: white;
-      box-shadow: 0 6px 20px rgba(255,65,108,0.6);
-      flex: 1 1 140px;
-      min-width: 140px;
-    }
+        /* Login screen as a popup */
+        #login-screen {
+            background: var(--login-popup-overlay-dark); /* Dark overlay for popup */
+            transition: background 0.3s ease, opacity 0.3s ease;
+            opacity: 1; /* Default visible */
+            display: flex; /* Ensure flex for centering */
+        }
+        body.light #login-screen {
+            background: var(--login-popup-overlay-light); /* Light overlay for popup */
+        }
+        #login-screen.hidden { /* Class to hide the popup */
+            opacity: 0;
+            pointer-events: none; /* Disable interaction when hidden */
+        }
 
-    #numberList {
-      max-height: 60vh;
-      overflow-y: auto;
-      margin-top: 10px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      background: var(--card-bg-light);
-      transition: background 0.3s;
-    }
-    body.dark #numberList {
-      background: var(--card-bg-dark);
-    }
+        #login-form {
+            backdrop-filter: blur(30px); /* Even more blur for login card */
+            -webkit-backdrop-filter: blur(30px);
+            background-color: var(--login-card-bg-dark); /* Default dark transparent */
+            border: 1px solid var(--login-border-dark);
+            color: var(--login-text-color-dark);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            transform: scale(1); /* Default scale for animation */
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        body.light #login-form { /* Light mode for login card */
+            background-color: var(--login-card-bg-light);
+            border: 1px solid var(--login-border-light);
+            color: var(--login-text-color-light);
+        }
 
-    .number-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 20px;
-      border-bottom: 1px solid #ddd;
-      transition: opacity 0.3s;
-      word-break: break-word;
-      font-variant-numeric: tabular-nums;
-    }
-    body.dark .number-item {
-      border-color: #444;
-    }
-    .number-item:last-child {
-      border-bottom: none;
-    }
+        #login-form input[type="password"] {
+            background-color: var(--login-input-bg-dark);
+            border: 1px solid var(--login-input-border-dark);
+            color: var(--login-text-color-dark);
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+        }
+        body.light #login-form input[type="password"] {
+            background-color: var(--login-input-bg-light);
+            border: 1px solid var(--login-input-border-light);
+            color: var(--login-text-color-light);
+        }
+        #login-form input[type="password"]::placeholder {
+            color: var(--login-input-placeholder-dark);
+        }
+        body.light #login-form input[type="password"]::placeholder {
+            color: var(--login-input-placeholder-light);
+        }
 
-    .number-text {
-      font-weight: 600;
-      font-size: 1.15rem;
-      color: var(--text-dark);
-      font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 0.08em;
-      user-select: text;
-      opacity: 0.85;
-      transition: opacity 0.25s ease;
-    }
-    body.dark .number-text {
-      color: var(--text-light);
-      font-weight: 600;
-      letter-spacing: 0.08em;
-    }
 
-    .copy-btn {
-      background: var(--btn-secondary);
-      color: #fff;
-      padding: 6px 6px;
-      border: none;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      transition: transform 0.2s ease, background-color 0.3s ease;
-      cursor: pointer;
-      min-width: 50px;
-      box-shadow: 0 5px 15px rgba(255, 65, 108, 0.6);
-      user-select: none;
-      flex-shrink: 0;
-      width: auto;
-      overflow: hidden;
-      position: relative;
-    }
+        /* Custom button gradients */
+        .btn-main {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex: 1 1 120px;
+            min-width: 120px;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            font-weight: 700;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            color: white; /* All main buttons have white text */
+        }
 
-    .copy-btn:hover:not(:disabled) {
-      transform: scale(1.1);
-      background: linear-gradient(135deg, #ff4b2b, #ff416c);
-      box-shadow: 0 7px 20px rgba(255, 75, 67, 0.8);
-    }
+        .btn-generate {
+            background: linear-gradient(135deg, #2ecc71, #27ae60); /* Emerald */
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.6);
+        }
+        .btn-toggle {
+            background: linear-gradient(135deg, #e67e22, #d35400); /* Carrot */
+            box-shadow: 0 6px 20px rgba(230, 126, 34, 0.6);
+        }
+        .btn-copy {
+            background: linear-gradient(135deg, #3498db, #2980b9); /* Peter River */
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.6);
+        }
+        .btn-copy:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2980b9, #2c3e50); /* Darker blue */
+            box-shadow: 0 7px 20px rgba(52, 152, 219, 0.8);
+        }
+        .btn-copy.copied-success { /* For copied state */
+            background: linear-gradient(135deg, #27ae60, #2ecc71); /* Green */
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.6);
+            cursor: default; /* No hover effect when copied */
+            transform: none; /* No scale when copied */
+        }
+        .btn-login {
+            background: linear-gradient(135deg, var(--login-btn-start), var(--login-btn-end));
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            color: white; /* Login button text is white */
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-login:hover {
+            background: linear-gradient(135deg, #6D28D9, #C026D3); /* Darker purple to pink */
+        }
 
-    .copy-btn:disabled {
-      background: #28a745;
-      cursor: default;
-      box-shadow: none;
-      transform: none;
-    }
+        /* Ripple effect for all buttons */
+        button:focus:not(:disabled)::after,
+        button:active:not(:disabled)::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 100%;
+            height: 100%;
+            background: var(--ripple-color);
+            border-radius: inherit;
+            transform: translate(-50%, -50%) scale(0);
+            animation: ripple 0.6s forwards;
+            pointer-events: none;
+            z-index: 1;
+        }
 
-    /* Ripple effect for all buttons */
-    button:focus:not(:disabled)::after,
-    button:active:not(:disabled)::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 100%;
-      height: 100%;
-      background: var(--ripple-color);
-      border-radius: inherit;
-      transform: translate(-50%, -50%) scale(0);
-      animation: ripple 0.6s forwards;
-      pointer-events: none;
-      z-index: 1;
-    }
+        @keyframes ripple {
+            to {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
+        }
 
-    @keyframes ripple {
-      to {
-        transform: translate(-50%, -50%) scale(2.5);
-        opacity: 0;
-      }
-    }
+        /* Scrollbar styling */
+        #numberList::-webkit-scrollbar {
+            width: 8px;
+        }
 
-    @media (max-width: 520px) {
-      .number-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      .copy-btn {
-        width: auto;
-        min-width: 50px;
-        font-size: 0.8rem;
-        padding: 5px 8px;
-      }
-      select, button {
-        min-width: 100%;
-        flex: 1 1 100%;
-      }
-      .controls {
-        gap: 15px;
-      }
-    }
-  </style>
+        #numberList::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1); /* Transparent track */
+            border-radius: 10px;
+        }
+
+        #numberList::-webkit-scrollbar-thumb {
+            background: rgba(150,150,150,0.7); /* Semi-transparent thumb */
+            border-radius: 10px;
+        }
+
+        #numberList::-webkit-scrollbar-thumb:hover {
+            background: rgba(100,100,100,0.9);
+        }
+
+        body.dark #numberList::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+
+        body.dark #numberList::-webkit-scrollbar-thumb {
+            background: rgba(100,100,100,0.7);
+        }
+
+        body.dark #numberList::-webkit-scrollbar-thumb:hover {
+            background: rgba(150,150,150,0.9);
+        }
+    </style>
 </head>
-<body>
-  <h1>International Number Generator</h1>
-  <div class="container">
-    <div class="controls">
-      <select id="countrySelect" aria-label="Select Country">
-        <option value="PL">🇵🇱 Poland</option>
-        <option value="ES">🇪🇸 Spain</option>
-      </select>
-      <select id="prefixSelect" aria-label="Select Prefix"></select>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-800 dark:text-gray-200">
+
+    <!-- Login Screen (now acts as a popup overlay) -->
+    <div id="login-screen" class="fixed inset-0 flex flex-col items-center justify-center z-50">
+        <div id="login-form" class="p-8 rounded-2xl shadow-2xl text-center w-11/12 max-w-md transition-colors duration-300">
+            <h2 class="text-4xl font-extrabold mb-6 font-montserrat text-white dark:text-white">Welcome to Generator <span class="text-purple-400 dark:text-purple-300">v1.0</span></h2>
+            <p class="text-lg mb-6 opacity-80 text-white dark:text-white">Please enter your password to continue.</p>
+            <label for="password" class="block mb-4 text-lg font-semibold text-left text-white dark:text-white">Password:</label>
+            <input type="password" id="password" placeholder="••••••••"
+                   class="w-full px-4 py-3 mb-6 rounded-xl text-lg focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-inner" />
+            <button id="login-button" class="btn-login w-full transform hover:scale-105">
+                Login
+            </button>
+            <p id="login-error-message" class="text-red-400 dark:text-red-300 mt-4 font-medium text-base"></p>
+        </div>
     </div>
-    <div class="controls">
-      <button class="generate" aria-label="Generate More Numbers">🔁 Generate More</button>
-      <button class="light-toggle" aria-label="Toggle Light/Dark Mode">🌞 Toggle Light/Dark</button>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden w-full max-w-xl flex flex-col items-center pt-10 pb-10">
+        <h1 class="text-4xl font-extrabold text-white mb-8 tracking-wide text-center">International Number Generator <span class="text-blue-300 text-2xl">v1.0</span></h1>
+
+        <div class="frosted-card rounded-2xl p-6 shadow-2xl w-full transition-colors duration-300">
+            <div class="controls flex flex-wrap gap-4 justify-center mb-6">
+                <select id="countrySelect" aria-label="Select Country"
+                        class="btn-main bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:scale-105 appearance-none pr-8 bg-no-repeat bg-right-center"
+                        style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'currentColor\'%3e%3cpath fill-rule=\'evenodd\' d=\'M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\' clip-rule=\'evenodd\'%3e%3c/path%3e%3c/svg%3e'); background-size: 1.5rem;">
+                    <option value="PL">🇵🇱 Poland</option>
+                    <option value="ES">🇪🇸 Spain</option>
+                </select>
+                <select id="prefixSelect" aria-label="Select Prefix"
+                        class="btn-main bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200 hover:scale-105 appearance-none pr-8 bg-no-repeat bg-right-center"
+                        style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 20 20\' fill=\'currentColor\'%3e%3cpath fill-rule=\'evenodd\' d=\'M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\' clip-rule=\'evenodd\'%3e%3c/path%3e%3c/svg%3e'); background-size: 1.5rem;"></select>
+            </div>
+            <div class="controls flex flex-wrap gap-4 justify-center mb-6">
+                <button class="generate btn-main btn-generate transform hover:scale-105">
+                    🔁 Generate More
+                </button>
+                <button class="light-toggle btn-main btn-toggle transform hover:scale-105">
+                    🌞 Toggle Light/Dark
+                </button>
+            </div>
+            <div id="numberList" role="list" aria-live="polite"
+                 class="max-h-[60vh] overflow-y-auto mt-4 rounded-xl shadow-lg frosted-card transition-colors duration-300"></div>
+        </div>
     </div>
-    <div id="numberList" role="list" aria-live="polite"></div>
-  </div>
 
-  <script>
-    const countryData = {
-      PL: {
-        prefixes: ['531','533','535'], // only voicemail supported
-        voicemail: ['531','533','535']
-      },
-      ES: {
-        prefixes: ['610','620','640'], // only voicemail supported
-        voicemail: ['610','620','640']
-      }
-    };
+    <!-- Footer -->
+    <footer class="mt-10 text-white text-lg font-medium text-shadow-sm text-center">
+        Build with ❤️ By <a href="https://t.me/iambedahere" target="_blank" class="text-blue-300 hover:text-blue-500 transition-colors duration-200 underline">B3da Hax0r</a>
+    </footer>
 
-    const storagePrefix = prefix => `nums_${selCountry}_${prefix}`;
-    let selCountry = 'PL', selPrefix = '';
-    let saved = new Set();
-    let lastCopiedBtn = null; // track last copied button (DOM element)
-    let lastCopiedNumber = null; // track last copied number (string)
+    <script>
+        // --- Login and Access Control ---
+        const loginScreen = document.getElementById('login-screen');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('login-button');
+        const loginErrorMessage = document.getElementById('login-error-message');
+        const mainContent = document.getElementById('main-content');
 
-    const countrySelect = document.getElementById('countrySelect');
-    const prefixSelect = document.getElementById('prefixSelect');
-    const genBtn = document.querySelector('.generate');
-    const toggleBtn = document.querySelector('.light-toggle');
-    const list = document.getElementById('numberList');
+        // Passwords encoded in Base64
+        const USER_PASSWORD_B64 = 'dGFudQ=='; 
+        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; 
+        const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
 
-    function fillPrefixes() {
-      selPrefix = '';
-      prefixSelect.innerHTML = countryData[selCountry].prefixes
-        .map(p => `<option value="${p}">${p} 🎧</option>`).join('');
-      selPrefix = prefixSelect.value;
-    }
+        /**
+         * Checks if the current time in Cambodia (ICT - Indochina Time, UTC+7)
+         * falls within the restricted hours for regular users (6 PM to 11 PM).
+         * @returns {boolean} True if access is blocked, false otherwise.
+         */
+        function checkAccessTime() {
+            const now = new Date();
+            // Get current UTC time
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            // Convert to Cambodia time (UTC+7)
+            const cambodiaTime = new Date(utc + (3600000 * 7));
 
-    function loadSaved() {
-      saved = new Set();
-      const arr = JSON.parse(localStorage.getItem(storagePrefix(selPrefix)) || '[]');
-      arr.forEach(n => saved.add(n));
-      return Array.from(saved);
-    }
+            const hour = cambodiaTime.getHours();
+            // Block from 6 PM (18:00) to 11 PM (23:00)
+            return (hour >= 18 && hour < 23);
+        }
 
-    function save() {
-      localStorage.setItem(storagePrefix(selPrefix), JSON.stringify(Array.from(saved)));
-    }
+        /**
+         * Handles the login attempt.
+         * Authenticates the user based on the entered password and applies time-based restrictions.
+         */
+        function handleLogin() {
+            const enteredPassword = passwordInput.value;
+            let userRole = '';
 
-    function generateNumber() {
-      let number;
-      do {
-        const suf = ('' + Math.floor(100000 + Math.random() * 900000));
-        number = `+48${selPrefix}${suf}`;
-      } while (saved.has(number));
-      saved.add(number);
-      return number;
-    }
+            // Encode the entered password to Base64 before comparison
+            const enteredPasswordB64 = btoa(enteredPassword);
 
-    function createNumberItem(number) {
-      const div = document.createElement('div');
-      div.className = 'number-item';
-      div.setAttribute('role', 'listitem');
+            if (enteredPasswordB64 === USER_PASSWORD_B64) {
+                userRole = 'user';
+            } else if (enteredPasswordB64 === ADMIN_PASSWORD_B64) {
+                userRole = 'admin';
+            }
 
-      const span = document.createElement('span');
-      span.className = 'number-text';
-      span.textContent = number;
+            if (userRole) {
+                if (userRole === 'user' && checkAccessTime()) {
+                    loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
+                    passwordInput.value = ''; // Clear password field
+                    return;
+                }
+                sessionStorage.setItem(LOGIN_STATUS_KEY, userRole);
+                loginScreen.classList.add('hidden'); // Hide the login popup
+                mainContent.style.display = 'flex'; // Show main content
+                initializeApp(); // Initialize the main application
+            } else {
+                loginErrorMessage.textContent = 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।'; // Incorrect password message in Bengali
+                passwordInput.value = ''; // Clear password field
+            }
+        }
 
-      const copyBtn = document.createElement('button');
-      copyBtn.className = 'copy-btn';
-
-      // Check if this number was last copied, show copied status
-      if (number === lastCopiedNumber) {
-        copyBtn.textContent = '✅ Copied!';
-        copyBtn.disabled = true;
-        lastCopiedBtn = copyBtn;
-      } else {
-        copyBtn.textContent = '📋 Copy';
-        copyBtn.disabled = false;
-      }
-
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(number).then(() => {
-          // Reset previous copied button if exists
-          if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
-            lastCopiedBtn.textContent = '📋 Copy';
-            lastCopiedBtn.disabled = false;
-          }
-          copyBtn.textContent = '✅ Copied!';
-          copyBtn.disabled = true;
-          lastCopiedBtn = copyBtn;
-          lastCopiedNumber = number;
+        loginButton.addEventListener('click', handleLogin);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
         });
-      };
 
-      div.appendChild(span);
-      div.appendChild(copyBtn);
-      return div;
-    }
+        // Check login status on page load
+        const storedUserRole = sessionStorage.getItem(LOGIN_STATUS_KEY);
+        if (storedUserRole) {
+            if (storedUserRole === 'user' && checkAccessTime()) {
+                // If a regular user is logged in but it's restricted time, show login screen with message
+                loginScreen.classList.remove('hidden'); // Ensure popup is visible
+                mainContent.style.display = 'none';
+                loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
+            } else {
+                // If logged in and access is allowed, hide login screen and show main content
+                loginScreen.classList.add('hidden'); // Hide the login popup
+                mainContent.style.display = 'flex'; // Show main content
+                initializeApp();
+            }
+        } else {
+            loginScreen.classList.remove('hidden'); // Show the login popup
+            mainContent.style.display = 'none';
+        }
 
-    function renderNumberList(numbers, replace = false) {
-      if (replace) list.innerHTML = '';
-      numbers.forEach(n => {
-        list.appendChild(createNumberItem(n));
-      });
-    }
+        // --- Main Application Logic (moved into initializeApp function) ---
+        function initializeApp() {
+            const countryData = {
+                PL: {
+                    prefixes: ['531', '533', '535'], // only voicemail supported
+                    voicemail: ['531', '533', '535'],
+                    countryCode: '+48'
+                },
+                ES: {
+                    prefixes: ['610', '620', '640'], // only voicemail supported
+                    voicemail: ['610', '620', '640'],
+                    countryCode: '+34'
+                }
+            };
 
-    function generateMore() {
-      const newNumbers = [];
-      for (let i = 0; i < 10; i++) {
-        const num = generateNumber();
-        newNumbers.push(num);
-      }
-      save();  // save updated set including new numbers
-      renderNumberList(newNumbers, true);
-    }
+            const storagePrefix = prefix => `nums_${selCountry}_${prefix}`;
+            let selCountry = 'PL',
+                selPrefix = '';
+            let saved = new Set();
+            let lastCopiedBtn = null; // track last copied button (DOM element)
+            let lastCopiedNumber = null; // track last copied number (string)
 
-    function onPrefixChange() {
-      selPrefix = prefixSelect.value;
-      list.innerHTML = '';
-      lastCopiedBtn = null;
-      lastCopiedNumber = null;
-      const existing = loadSaved().sort();
-      renderNumberList(existing, true);
-    }
+            const countrySelect = document.getElementById('countrySelect');
+            const prefixSelect = document.getElementById('prefixSelect');
+            const genBtn = document.querySelector('.generate');
+            const toggleBtn = document.querySelector('.light-toggle');
+            const list = document.getElementById('numberList');
 
-    countrySelect.onchange = () => {
-      selCountry = countrySelect.value;
-      fillPrefixes();
-      saved.clear();
-      lastCopiedBtn = null;
-      lastCopiedNumber = null;
-      onPrefixChange();
-    };
+            /**
+             * Populates the prefix dropdown based on the selected country.
+             */
+            function fillPrefixes() {
+                selPrefix = '';
+                prefixSelect.innerHTML = countryData[selCountry].prefixes
+                    .map(p => `<option value="${p}">${p} 🎧</option>`).join('');
+                selPrefix = prefixSelect.value;
+            }
 
-    prefixSelect.onchange = () => {
-      lastCopiedBtn = null;
-      lastCopiedNumber = null;
-      onPrefixChange();
-    };
+            /**
+             * Loads saved numbers from localStorage for the current country and prefix.
+             * @returns {Array<string>} An array of saved numbers.
+             */
+            function loadSaved() {
+                saved = new Set();
+                const arr = JSON.parse(localStorage.getItem(storagePrefix(selPrefix)) || '[]');
+                arr.forEach(n => saved.add(n));
+                return Array.from(saved);
+            }
 
-    toggleBtn.onclick = () => {
-      document.body.classList.toggle('dark');
-      document.body.classList.toggle('light');
-      localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
-    };
+            /**
+             * Saves the current set of numbers to localStorage.
+             */
+            function save() {
+                localStorage.setItem(storagePrefix(selPrefix), JSON.stringify(Array.from(saved)));
+            }
 
-    // Initialization
-    fillPrefixes();
-    selPrefix = prefixSelect.value;
-    onPrefixChange();
+            /**
+             * Generates a unique 10-digit international number based on selected country and prefix.
+             * @returns {string} The generated phone number.
+             */
+            function generateNumber() {
+                let number;
+                const countryCode = countryData[selCountry].countryCode;
+                do {
+                    // Generate a 6-digit suffix
+                    const suf = ('' + Math.floor(100000 + Math.random() * 900000));
+                    number = `${countryCode}${selPrefix}${suf}`;
+                } while (saved.has(number)); // Ensure the number is unique
+                saved.add(number);
+                return number;
+            }
 
-    // Generate More button
-    genBtn.onclick = generateMore;
+            /**
+             * Creates a DOM element for a single number item with copy functionality.
+             * @param {string} number The phone number string.
+             * @returns {HTMLElement} The created div element.
+             */
+            function createNumberItem(number) {
+                const div = document.createElement('div');
+                div.className = 'number-item flex justify-between items-center py-4 px-5 border-b border-gray-200 dark:border-gray-700 transition-opacity duration-300';
+                div.setAttribute('role', 'listitem');
 
-    // Load mode
-    const savedMode = localStorage.getItem('mode') || 'dark';
-    document.body.classList.add(savedMode);
-  </script>
+                const span = document.createElement('span');
+                span.className = 'number-text font-mono text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-wider break-all';
+                span.textContent = number;
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn btn-main btn-copy ml-4 px-4 py-2 rounded-xl text-white text-sm font-bold transition-all duration-300 relative overflow-hidden flex-shrink-0 transform hover:scale-105';
+                
+                // Set initial state based on lastCopiedNumber
+                if (number === lastCopiedNumber) {
+                    copyBtn.innerHTML = '✅ Copied!';
+                    copyBtn.disabled = true;
+                    copyBtn.classList.add('copied-success');
+                } else {
+                    copyBtn.innerHTML = '📋 Copy';
+                    copyBtn.disabled = false;
+                    copyBtn.classList.remove('copied-success');
+                }
+
+                copyBtn.onclick = () => {
+                    document.execCommand('copy', false, number); // Using execCommand for broader compatibility in iframes
+
+                    // Reset previous copied button if exists
+                    if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
+                        lastCopiedBtn.innerHTML = '📋 Copy';
+                        lastCopiedBtn.disabled = false;
+                        lastCopiedBtn.classList.remove('copied-success');
+                    }
+                    copyBtn.innerHTML = '✅ Copied!';
+                    copyBtn.disabled = true;
+                    copyBtn.classList.add('copied-success'); // Add success class
+                    lastCopiedBtn = copyBtn;
+                    lastCopiedNumber = number;
+                };
+
+                div.appendChild(span);
+                div.appendChild(copyBtn);
+                return div;
+            }
+
+            /**
+             * Renders a list of numbers into the numberList container.
+             * @param {Array<string>} numbers An array of numbers to render.
+             * @param {boolean} replace If true, replaces existing content; otherwise, appends.
+             */
+            function renderNumberList(numbers, replace = false) {
+                if (replace) list.innerHTML = '';
+                numbers.forEach(n => {
+                    list.appendChild(createNumberItem(n));
+                });
+            }
+
+            /**
+             * Generates 10 new unique numbers and updates the display.
+             */
+            function generateMore() {
+                const newNumbers = [];
+                for (let i = 0; i < 10; i++) {
+                    const num = generateNumber();
+                    newNumbers.push(num);
+                }
+                save(); // save updated set including new numbers
+                renderNumberList(newNumbers, true);
+            }
+
+            /**
+             * Handles changes in the prefix dropdown, clearing and re-rendering the list.
+             */
+            function onPrefixChange() {
+                selPrefix = prefixSelect.value;
+                list.innerHTML = '';
+                // Do NOT reset lastCopiedBtn or lastCopiedNumber here, as it should persist across prefix changes
+                const existing = loadSaved().sort();
+                renderNumberList(existing, true);
+            }
+
+            // Event Listeners
+            countrySelect.onchange = () => {
+                selCountry = countrySelect.value;
+                fillPrefixes();
+                saved.clear();
+                // Do NOT reset lastCopiedBtn or lastCopiedNumber here
+                onPrefixChange();
+            };
+
+            prefixSelect.onchange = () => {
+                // Do NOT reset lastCopiedBtn or lastCopiedNumber here
+                onPrefixChange();
+            };
+
+            toggleBtn.onclick = () => {
+                document.body.classList.toggle('dark');
+                document.body.classList.toggle('light'); // Ensure light class is also toggled
+                localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
+            };
+
+            // Initialization
+            fillPrefixes();
+            selPrefix = prefixSelect.value;
+            onPrefixChange();
+
+            // Generate More button
+            genBtn.onclick = generateMore;
+
+            // Load mode
+            const savedMode = localStorage.getItem('mode') || 'dark'; // Default to dark mode
+            document.body.classList.add(savedMode);
+            // Ensure the correct class is applied for light mode if it was saved as such
+            if (savedMode === 'light') {
+                document.body.classList.remove('dark');
+                document.body.classList.add('light');
+            }
+        }
+    </script>
 </body>
 </html>
