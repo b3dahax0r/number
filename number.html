@@ -267,6 +267,82 @@
         body.dark .number-text {
             color: var(--text-light); /* For dark mode */
         }
+
+        /* Styles for the Voicemail Details Section */
+        #voicemail-details-container {
+            display: none; /* Hidden by default */
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            background-color: var(--card-bg-light); /* Frosted effect */
+            border: 1px solid var(--border-light);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        body.dark #voicemail-details-container {
+            background-color: var(--card-bg-dark);
+            border: 1px solid var(--border-dark);
+        }
+
+        #voicemail-details-container h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        body.dark #voicemail-details-container h2 {
+            color: var(--text-light);
+        }
+
+        .voicemail-country-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        body.dark .voicemail-country-card {
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .voicemail-country-card h3 {
+            font-weight: 600;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        body.dark .voicemail-country-card h3 {
+            color: var(--text-light);
+        }
+
+        .voicemail-country-card p {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+            color: var(--text-dark); /* Default text color */
+        }
+
+        body.dark .voicemail-country-card p {
+            color: var(--text-light); /* Dark mode text color */
+        }
+
+        .voicemail-country-card strong {
+            color: #4A90E2; /* A nice blue for emphasis */
+        }
+        body.dark .voicemail-country-card strong {
+            color: #6DD5ED; /* Lighter blue for dark mode */
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-800 dark:text-gray-200">
@@ -311,10 +387,20 @@
                 <button class="light-toggle btn-main btn-toggle transform hover:scale-105">
                     🌞 Toggle Light/Dark
                 </button>
+                <button id="showVoicemailDetails" class="btn-main btn-toggle transform hover:scale-105 hidden">
+                    📞 Voicemail Details
+                </button>
             </div>
             <div id="numberList" role="list" aria-live="polite"
                  class="max-h-[60vh] overflow-y-auto mt-4 rounded-xl shadow-lg frosted-card transition-colors duration-300"></div>
         </div>
+
+        <div id="voicemail-details-container" class="hidden">
+            <h2 class="text-white">Voicemail Access Information</h2>
+            <div id="voicemail-details-content">
+                </div>
+        </div>
+
     </div>
 
     <footer class="mt-10 text-white text-lg font-medium text-shadow-sm text-center">
@@ -328,9 +414,12 @@
         const loginButton = document.getElementById('login-button');
         const loginErrorMessage = document.getElementById('login-error-message');
         const mainContent = document.getElementById('main-content');
+        const showVoicemailDetailsBtn = document.getElementById('showVoicemailDetails');
+        const voicemailDetailsContainer = document.getElementById('voicemail-details-container');
+        const voicemailDetailsContent = document.getElementById('voicemail-details-content');
 
         // Passwords encoded in Base64 (for client-side demonstration only)
-        const USER_PASSWORD_B64 = 'dGFudQ=='; 
+        const USER_PASSWORD_B64 = 'dGFudQ=='; // 
         const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ==';
         const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
 
@@ -409,6 +498,12 @@
                 if (userRole === 'user') {
                     startAutoLogoutTimer(); // Start auto-logout timer for regular users
                 }
+                // Show voicemail details button if admin
+                if (userRole === 'admin') {
+                    showVoicemailDetailsBtn.classList.remove('hidden');
+                } else {
+                    showVoicemailDetailsBtn.classList.add('hidden');
+                }
             } else {
                 loginErrorMessage.textContent = 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।'; // Incorrect password message in Bengali
                 passwordInput.value = ''; // Clear password field
@@ -431,6 +526,7 @@
                 mainContent.style.display = 'none';
                 loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
                 sessionStorage.removeItem(LOGIN_STATUS_KEY); // Clear session if already logged in and time restricted
+                showVoicemailDetailsBtn.classList.add('hidden'); // Hide for regular user
             } else {
                 // If logged in and access is allowed, hide login screen and show main content
                 loginScreen.classList.add('hidden'); // Hide the login popup
@@ -439,10 +535,17 @@
                 if (storedUserRole === 'user') {
                     startAutoLogoutTimer(); // Start auto-logout timer for regular users who are already logged in
                 }
+                // Show voicemail details button if admin
+                if (storedUserRole === 'admin') {
+                    showVoicemailDetailsBtn.classList.remove('hidden');
+                } else {
+                    showVoicemailDetailsBtn.classList.add('hidden');
+                }
             }
         } else {
             loginScreen.classList.remove('hidden'); // Show the login popup
             mainContent.style.display = 'none';
+            showVoicemailDetailsBtn.classList.add('hidden'); // Hide for logged out state
         }
 
         // --- Main Application Logic (moved into initializeApp function) ---
@@ -451,32 +554,68 @@
                 PL: {
                     prefixes: ['531', '533', '535', '790', '791', '792', '793'],
                     countryCode: '+48',
-                    mobileNumberLength: 9 // digits excluding country code
+                    mobileNumberLength: 9, // digits excluding country code
+                    voicemailInfo: {
+                        operator: 'Play (P4)',
+                        accessNumber: '+48 790 200 200',
+                        samplePrefixes: '531, 790, 791, 792, 793…',
+                        language: 'Polish (e.g., "Nagraj wiadomość po sygnale" = "Record after tone")'
+                    }
                 },
                 ES: {
                     prefixes: ['610', '620', '640'],
                     countryCode: '+34',
-                    mobileNumberLength: 9 // Spain's mobile numbers are typically 9 digits
+                    mobileNumberLength: 9, // Spain's mobile numbers are typically 9 digits
+                    voicemailInfo: {
+                        operator: 'Various', // Not specified, so generalized
+                        accessNumber: 'Varies by operator',
+                        samplePrefixes: '610, 620, 640',
+                        language: 'Spanish'
+                    }
                 },
                 EE: {
                     prefixes: ['500', '501', '502', '503', '504', '505', '506', '507', '508', '509', '510', '511', '512', '513', '514', '515', '516', '517', '518', '519', '520', '521', '522', '523', '524', '525', '526', '527', '528', '529'],
                     countryCode: '+372',
-                    mobileNumberLength: 7 // Estonia's mobile numbers can be 7 or 8. Using 7 for consistency.
+                    mobileNumberLength: 7, // Estonia's mobile numbers can be 7 or 8. Using 7 for consistency.
+                    voicemailInfo: {
+                        operator: 'Telia Estonia',
+                        accessNumber: '+372 7 202 020',
+                        samplePrefixes: '50x, 51x, 52x',
+                        language: 'Estonian / English greetings'
+                    }
                 },
                 HU: {
                     prefixes: ['20', '30', '70'],
                     countryCode: '+36',
-                    mobileNumberLength: 9 // Hungary's mobile numbers are typically 9 digits
+                    mobileNumberLength: 9, // Hungary's mobile numbers are typically 9 digits
+                    voicemailInfo: {
+                        operator: 'Telenor Hungary',
+                        accessNumber: '+36 70 70 70 70',
+                        samplePrefixes: '30x, 20x',
+                        language: 'Hungarian greetings (e.g., "Kérem, hagyjon üzenetet")'
+                    }
                 },
                 LT: {
                     prefixes: ['600', '601', '602'],
                     countryCode: '+370',
-                    mobileNumberLength: 8 // Lithuania's mobile numbers are typically 8 digits
+                    mobileNumberLength: 8, // Lithuania's mobile numbers are typically 8 digits
+                    voicemailInfo: {
+                        operator: 'Telia Lithuania',
+                        accessNumber: '+370 6 800 6000',
+                        samplePrefixes: '600, 601, 602',
+                        language: 'Lithuanian greetings'
+                    }
                 },
                 SK: {
                     prefixes: ['900', '901', '902', '903', '904', '905', '906', '907', '908', '909', '910', '911', '912', '913', '914', '915', '916', '917', '918', '919'],
                     countryCode: '+421',
-                    mobileNumberLength: 9 // Slovakia's mobile numbers are typically 9 digits
+                    mobileNumberLength: 9, // Slovakia's mobile numbers are typically 9 digits
+                    voicemailInfo: {
+                        operator: 'Orange Slovakia',
+                        accessNumber: '+421 950 123 456',
+                        samplePrefixes: '90x, 91x',
+                        language: 'Slovak language voicemail greeting'
+                    }
                 }
             };
 
@@ -666,6 +805,28 @@
                 renderNumberList(existing, true);
             }
 
+            /**
+             * Renders the voicemail details in a dedicated container.
+             */
+            function renderVoicemailDetails() {
+                voicemailDetailsContent.innerHTML = ''; // Clear previous content
+                for (const countryCode in countryData) {
+                    const countryInfo = countryData[countryCode];
+                    if (countryInfo.voicemailInfo) {
+                        const vm = countryInfo.voicemailInfo;
+                        const countryCard = document.createElement('div');
+                        countryCard.className = 'voicemail-country-card';
+                        countryCard.innerHTML = `
+                            <h3>${countryCode} - ${vm.operator}</h3>
+                            <p><strong>Voicemail Access Number:</strong> ${vm.accessNumber}</p>
+                            <p><strong>Sample Prefixes:</strong> ${vm.samplePrefixes}</p>
+                            <p><strong>Language/Greeting:</strong> ${vm.language}</p>
+                        `;
+                        voicemailDetailsContent.appendChild(countryCard);
+                    }
+                }
+            }
+
             // Event Listeners
             countrySelect.onchange = () => {
                 selCountry = countrySelect.value;
@@ -684,6 +845,21 @@
                 document.body.classList.toggle('dark');
                 document.body.classList.toggle('light'); // Ensure light class is also toggled
                 localStorage.setItem('mode', document.body.classList.contains('dark') ? 'dark' : 'light');
+            };
+
+            showVoicemailDetailsBtn.onclick = () => {
+                // Toggle visibility of the main number generator section and voicemail details section
+                const isDetailsVisible = voicemailDetailsContainer.style.display === 'block';
+                if (isDetailsVisible) {
+                    voicemailDetailsContainer.style.display = 'none';
+                    document.querySelector('.frosted-card').style.display = 'block'; // Show generator controls
+                    showVoicemailDetailsBtn.textContent = '📞 Voicemail Details';
+                } else {
+                    renderVoicemailDetails(); // Render details when showing
+                    voicemailDetailsContainer.style.display = 'block';
+                    document.querySelector('.frosted-card').style.display = 'none'; // Hide generator controls
+                    showVoicemailDetailsBtn.textContent = 'Generator Mode';
+                }
             };
 
             // Initialization
