@@ -333,25 +333,20 @@
         let autoLogoutIntervalId = null; // Variable to store the interval ID for auto-logout
 
         /**
-         * Checks if the current time in Cambodia (ICT - Indochina Time, UTC+7)
+         * Checks if the current LOCAL DEVICE TIME
          * falls within the restricted hours for regular users (6 PM to 11 PM).
          * @returns {boolean} True if access is blocked, false otherwise.
          */
         function checkAccessTime() {
-            const now = new Date();
-            // Get current UTC time
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            // Convert to Cambodia time (UTC+7)
-            const cambodiaTime = new Date(utc + (3600000 * 7));
-
-            const hour = cambodiaTime.getHours();
+            const now = new Date(); // Gets the local device time
+            const hour = now.getHours();
             // Block from 6 PM (18:00) to 11 PM (23:00)
             return (hour >= 18 && hour < 23);
         }
 
         /**
-         * Starts a timer that periodically checks the time for auto-logout.
-         * If the user is a regular user and the time hits 6 PM, it logs them out.
+         * Starts a timer that periodically checks the local device time for auto-logout.
+         * If the user is a regular user and the time hits 6 PM, it logs them out and refreshes.
          */
         function startAutoLogoutTimer() {
             // Clear any existing timer to prevent multiple intervals running
@@ -362,24 +357,22 @@
             autoLogoutIntervalId = setInterval(() => {
                 const storedUserRole = sessionStorage.getItem(LOGIN_STATUS_KEY);
                 if (storedUserRole === 'user') {
-                    const now = new Date();
-                    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-                    const cambodiaTime = new Date(utc + (3600000 * 7));
-                    const hour = cambodiaTime.getHours();
+                    const now = new Date(); // Get local device time
+                    const hour = now.getHours();
 
-                    // If it's 6 PM or later, and the user is not an admin, log them out
+                    // If it's 6 PM (18:00) or later, and the user is not an admin, log them out and refresh
                     if (hour >= 18) {
-                        console.log('Auto-logging out user due to time restriction.');
+                        console.log('Auto-logging out user due to time restriction. Refreshing page.');
                         sessionStorage.removeItem(LOGIN_STATUS_KEY); // Remove login session
                         clearInterval(autoLogoutIntervalId); // Stop the timer
-                        window.location.reload(); // Reload the page to go back to login screen
+                        window.location.reload(true); // Reload the page to go back to login screen, forcing from server
                     }
                 } else {
                     // If no user is logged in or it's an admin, stop the timer
                     clearInterval(autoLogoutIntervalId);
                     autoLogoutIntervalId = null;
                 }
-            }, 60000); // Check every minute (60000 milliseconds)
+            }, 5000); // Check every 5 seconds (5000 milliseconds) for responsiveness
         }
 
         /**
@@ -531,7 +524,8 @@
                 div.setAttribute('role', 'listitem');
 
                 const span = document.createElement('span');
-                span.className = 'number-text font-mono text-lg font-semibold tracking-wider break-all'; // Removed specific text-gray-800/dark:text-gray-200 here to let CSS variables handle it
+                // The number-text class's color is now handled by the CSS variables based on body.dark/light
+                span.className = 'number-text font-mono text-lg font-semibold tracking-wider break-all'; 
                 span.textContent = number;
 
                 const copyBtn = document.createElement('button');
