@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0" />
     <title>Intl Number Generator v1.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -51,6 +51,15 @@
             background-attachment: fixed;
             position: relative;
             z-index: 0;
+            /* Disable double-tap zoom and user selection */
+            -webkit-touch-callout: none; /* iOS Safari */
+            -webkit-user-select: none; /* Safari */
+            -khtml-user-select: none; /* Konqueror HTML */
+            -moz-user-select: none; /* Old versions of Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on iOS */
+            touch-action: manipulation; /* Disable double-tap zoom on modern browsers */
         }
 
         /* Overlay for main app background image */
@@ -137,7 +146,6 @@
         body.light #login-form input[type="password"]::placeholder {
             color: var(--login-input-placeholder-light);
         }
-
 
         /* Custom button gradients */
         .btn-main {
@@ -250,6 +258,15 @@
         body.dark #numberList::-webkit-scrollbar-thumb:hover {
             background: rgba(150,150,150,0.9);
         }
+
+        /* Ensure number text color updates correctly with dark/light mode */
+        .number-text {
+            color: var(--text-dark); /* Default for light mode */
+        }
+
+        body.dark .number-text {
+            color: var(--text-light); /* For dark mode */
+        }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-800 dark:text-gray-200">
@@ -308,9 +325,9 @@
         const loginErrorMessage = document.getElementById('login-error-message');
         const mainContent = document.getElementById('main-content');
 
-        // Passwords encoded in Base64
-        const USER_PASSWORD_B64 = 'dGFudQ==';
-        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ==';
+        // Passwords encoded in Base64 (for client-side demonstration only)
+        const USER_PASSWORD_B64 = 'dGFudQ=='; // 'tanu'
+        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; // 'tanisha'
         const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
 
         let autoLogoutIntervalId = null; // Variable to store the interval ID for auto-logout
@@ -514,7 +531,7 @@
                 div.setAttribute('role', 'listitem');
 
                 const span = document.createElement('span');
-                span.className = 'number-text font-mono text-lg font-semibold text-gray-800 dark:text-gray-200 tracking-wider break-all';
+                span.className = 'number-text font-mono text-lg font-semibold tracking-wider break-all'; // Removed specific text-gray-800/dark:text-gray-200 here to let CSS variables handle it
                 span.textContent = number;
 
                 const copyBtn = document.createElement('button');
@@ -532,7 +549,8 @@
                 }
 
                 copyBtn.onclick = () => {
-                    document.execCommand('copy', false, number); // Using execCommand for broader compatibility in iframes
+                    // Using execCommand for broader compatibility, though navigator.clipboard is preferred
+                    document.execCommand('copy', false, number); 
 
                     // Reset previous copied button if exists
                     if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
