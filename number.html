@@ -326,52 +326,27 @@
         const mainContent = document.getElementById('main-content');
 
         // Passwords encoded in Base64 (for client-side demonstration only)
-        const USER_PASSWORD_B64 = 'dGFudQ==';
-        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; 
+        const USER_PASSWORD_B64 = 'dGFudQ=='; // 'tanu'
+        const ADMIN_PASSWORD_B64 = 'dGFuaXNoYQ=='; // 'tanisha'
         const LOGIN_STATUS_KEY = 'loggedInUserRole'; // Stores 'user' or 'admin' in sessionStorage
 
         let autoLogoutIntervalId = null; // Variable to store the interval ID for auto-logout
 
         /**
-         * Checks the current LOCAL DEVICE TIME.
-         * Used for the *auto-refresh and logout trigger* at 6 PM.
-         * @returns {boolean} True if local device time is between 6 PM (18) and 11 PM (23).
+         * Checks if the current LOCAL DEVICE TIME
+         * falls within the restricted hours for regular users (6 PM to 11 PM).
+         * @returns {boolean} True if access is blocked, false otherwise.
          */
-        function checkLocalDeviceAccessTime() {
+        function checkAccessTime() {
             const now = new Date(); // Gets the local device time
             const hour = now.getHours();
+            // Block from 6 PM (18:00) to 11 PM (23:00)
             return (hour >= 18 && hour < 23);
         }
 
         /**
-         * Fetches the accurate time for Cambodia (Asia/Phnom_Penh) from an external API.
-         * This is used for *login restrictions* to prevent device time manipulation.
-         * @returns {Promise<number>} A promise that resolves with the hour in Cambodia time (0-23).
-         * Resolves with the local device hour as a fallback if API fails.
-         */
-        async function getAccurateCambodiaTime() {
-            const CAMBODIA_TIMEZONE = 'Asia/Phnom_Penh';
-            const API_URL = `https://worldtimeapi.org/api/timezone/${CAMBODIA_TIMEZONE}`;
-
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                const dateTime = new Date(data.datetime);
-                return dateTime.getHours(); // Return the hour in Cambodia time
-            } catch (error) {
-                console.error("Failed to fetch accurate time from API:", error);
-                loginErrorMessage.textContent = 'সময় যাচাই করতে সমস্যা হয়েছে। অনুগ্রহ করে ইন্টারনেট সংযোগ পরীক্ষা করুন।'; // Problem checking time. Please check internet connection.
-                // Fallback to local device time if API fails, but user is warned.
-                return new Date().getHours();
-            }
-        }
-
-        /**
          * Starts a timer that periodically checks the local device time for auto-logout.
-         * If the user is a regular user and the device time hits 6 PM, it logs them out and refreshes.
+         * If the user is a regular user and the time hits 6 PM, it logs them out and refreshes.
          */
         function startAutoLogoutTimer() {
             // Clear any existing timer to prevent multiple intervals running
@@ -385,12 +360,12 @@
                     const now = new Date(); // Get local device time
                     const hour = now.getHours();
 
-                    // If it's 6 PM (18:00) or later LOCAL DEVICE TIME, auto-logout and refresh
+                    // If it's 6 PM (18:00) or later, and the user is not an admin, log them out and refresh
                     if (hour >= 18) {
-                        console.log('Auto-logging out user due to local device time restriction. Refreshing page.');
+                        console.log('Auto-logging out user due to time restriction. Refreshing page.');
                         sessionStorage.removeItem(LOGIN_STATUS_KEY); // Remove login session
                         clearInterval(autoLogoutIntervalId); // Stop the timer
-                        window.location.reload(true); // Reload the page, forcing a fresh load
+                        window.location.reload(true); // Reload the page to go back to login screen, forcing from server
                     }
                 } else {
                     // If no user is logged in or it's an admin, stop the timer
@@ -402,10 +377,9 @@
 
         /**
          * Handles the login attempt.
-         * Authenticates the user based on the entered password and applies time-based restrictions
-         * using the *international time* from the API.
+         * Authenticates the user based on the entered password and applies time-based restrictions.
          */
-        async function handleLogin() {
+        function handleLogin() {
             const enteredPassword = passwordInput.value;
             let userRole = '';
 
@@ -419,24 +393,17 @@
             }
 
             if (userRole) {
-                // If it's a regular user, check access time using the accurate Cambodia time
-                if (userRole === 'user') {
-                    const cambodiaHour = await getAccurateCambodiaTime();
-                    // Block from 6 PM (18:00) to 11 PM (23:00) Cambodia time
-                    if (cambodiaHour >= 18 && cambodiaHour < 23) {
-                        loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
-                        passwordInput.value = ''; // Clear password field
-                        return;
-                    }
+                if (userRole === 'user' && checkAccessTime()) {
+                    loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
+                    passwordInput.value = ''; // Clear password field
+                    return;
                 }
-                
-                // If access is granted (either admin or user during allowed hours)
                 sessionStorage.setItem(LOGIN_STATUS_KEY, userRole);
                 loginScreen.classList.add('hidden'); // Hide the login popup
                 mainContent.style.display = 'flex'; // Show main content
                 initializeApp(); // Initialize the main application
                 if (userRole === 'user') {
-                    startAutoLogoutTimer(); // Start auto-logout timer for regular users (based on device time)
+                    startAutoLogoutTimer(); // Start auto-logout timer for regular users
                 }
             } else {
                 loginErrorMessage.textContent = 'ভুল পাসওয়ার্ড। আবার চেষ্টা করুন।'; // Incorrect password message in Bengali
@@ -451,38 +418,28 @@
             }
         });
 
-        // Check login status on page load (initial check for display)
-        async function initialLoginCheck() {
-            const storedUserRole = sessionStorage.getItem(LOGIN_STATUS_KEY);
-
-            if (storedUserRole) {
-                if (storedUserRole === 'user') {
-                    const cambodiaHour = await getAccurateCambodiaTime();
-                    // If a regular user is logged in but it's restricted time (Cambodia time), show login screen with message
-                    if (cambodiaHour >= 18 && cambodiaHour < 23) {
-                        loginScreen.classList.remove('hidden'); // Ensure popup is visible
-                        mainContent.style.display = 'none';
-                        loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
-                        sessionStorage.removeItem(LOGIN_STATUS_KEY); // Clear session if already logged in and time restricted
-                        return; // Stop further initialization if blocked
-                    }
-                }
+        // Check login status on page load
+        const storedUserRole = sessionStorage.getItem(LOGIN_STATUS_KEY);
+        if (storedUserRole) {
+            if (storedUserRole === 'user' && checkAccessTime()) {
+                // If a regular user is logged in but it's restricted time, show login screen with message
+                loginScreen.classList.remove('hidden'); // Ensure popup is visible
+                mainContent.style.display = 'none';
+                loginErrorMessage.textContent = 'সাধারণ ব্যবহারকারীদের জন্য সন্ধ্যা ৬টা থেকে রাত ১১টা পর্যন্ত অ্যাক্সেস ব্লক করা হয়েছে।'; // Access blocked message in Bengali
+                sessionStorage.removeItem(LOGIN_STATUS_KEY); // Clear session if already logged in and time restricted
+            } else {
                 // If logged in and access is allowed, hide login screen and show main content
                 loginScreen.classList.add('hidden'); // Hide the login popup
                 mainContent.style.display = 'flex'; // Show main content
                 initializeApp();
                 if (storedUserRole === 'user') {
-                    startAutoLogoutTimer(); // Start auto-logout timer for regular users who are already logged in (based on device time)
+                    startAutoLogoutTimer(); // Start auto-logout timer for regular users who are already logged in
                 }
-            } else {
-                loginScreen.classList.remove('hidden'); // Show the login popup
-                mainContent.style.display = 'none';
             }
+        } else {
+            loginScreen.classList.remove('hidden'); // Show the login popup
+            mainContent.style.display = 'none';
         }
-
-        // Call the initial check when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', initialLoginCheck);
-
 
         // --- Main Application Logic (moved into initializeApp function) ---
         function initializeApp() {
@@ -568,7 +525,7 @@
 
                 const span = document.createElement('span');
                 // The number-text class's color is now handled by the CSS variables based on body.dark/light
-                span.className = 'number-text font-mono text-lg font-semibold tracking-wider break-all'; 
+                span.className = 'number-text font-mono text-lg font-semibold tracking-wider break-all';
                 span.textContent = number;
 
                 const copyBtn = document.createElement('button');
@@ -585,21 +542,26 @@
                     copyBtn.classList.remove('copied-success');
                 }
 
-                copyBtn.onclick = () => {
-                    // Using execCommand for broader compatibility, though navigator.clipboard is preferred
-                    document.execCommand('copy', false, number); 
+                copyBtn.onclick = async () => {
+                    try {
+                        await navigator.clipboard.writeText(number);
 
-                    // Reset previous copied button if exists
-                    if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
-                        lastCopiedBtn.innerHTML = '📋 Copy';
-                        lastCopiedBtn.disabled = false;
-                        lastCopiedBtn.classList.remove('copied-success');
+                        // Reset previous copied button if exists
+                        if (lastCopiedBtn && lastCopiedBtn !== copyBtn) {
+                            lastCopiedBtn.innerHTML = '📋 Copy';
+                            lastCopiedBtn.disabled = false;
+                            lastCopiedBtn.classList.remove('copied-success');
+                        }
+                        copyBtn.innerHTML = '✅ Copied!';
+                        copyBtn.disabled = true;
+                        copyBtn.classList.add('copied-success'); // Add success class
+                        lastCopiedBtn = copyBtn;
+                        lastCopiedNumber = number;
+                    } catch (err) {
+                        console.error('Failed to copy text: ', err);
+                        // Optionally, provide user feedback that copy failed
+                        alert('Failed to copy number. Please try again or copy manually.');
                     }
-                    copyBtn.innerHTML = '✅ Copied!';
-                    copyBtn.disabled = true;
-                    copyBtn.classList.add('copied-success'); // Add success class
-                    lastCopiedBtn = copyBtn;
-                    lastCopiedNumber = number;
                 };
 
                 div.appendChild(span);
